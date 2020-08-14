@@ -50,11 +50,30 @@ def save_data(cursor, symbol, date, open, close, volume):
     )
     cursor.execute(query)
 
+"""
+Fetch all of the stock symbols that we want data for from the database
+"""
+def get_symbols(db, cursor):
+    query = 'SELECT * FROM symbols'
+    cursor.execute(query)
+    results = cursor.fetchall()
+
+    symbols = []
+    for row in results:
+        symbols.append(row[0])
+
+    db.commit()
+    return symbols
+
+def dd(foo):
+    print(foo)
+    import sys
+    sys.exit()
+
 def main():
     db = get_connection()
     cursor = db.cursor()
-
-    symbol_list = ['MSFT']
+    symbol_list = get_symbols(db, cursor)
     for symbol in symbol_list:
         daily_data = get_data_from_api(symbol)
 
@@ -63,7 +82,7 @@ def main():
             close = daily_data[date]['4. close']
             volume = daily_data[date]['5. volume']
 
-            save_data(db, cursor, symbol, date, open, close, volume)
+            save_data(cursor, symbol, date, open, close, volume)
 
         db.commit()
 
