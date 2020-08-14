@@ -67,6 +67,12 @@ def update_gap(db, cursor, id, gap):
     cursor.execute(query)
     db.commit()
 
+
+def set_null_gaps_to_zero(db, cursor):
+    query = "UPDATE prices SET `gap` = 0 where gap IS NULL"
+    cursor.execute(query)
+    db.commit()
+
 def main():
     db = get_connection()
     cursor = db.cursor()
@@ -89,6 +95,8 @@ def main():
 
         print("Finished updating gap for symbol: " + symbol)
 
+    # All of the very first days that we're tracking are still NULL, so set those to 0
+    set_null_gaps_to_zero(db, cursor)
     db.close()
 
 if __name__ == "__main__":
