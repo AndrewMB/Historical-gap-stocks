@@ -1,0 +1,11 @@
+.DS_Store
+.terraform
+*.zip
+response.json
+env
+build
+__pycache__
+*.pyc
+.coverage
+.pytest_cache
+.idea/
