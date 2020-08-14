@@ -6,6 +6,9 @@ import json
 from dotenv import load_dotenv
 load_dotenv(verbose=True)
 
+"""
+Create a connection to the database
+"""
 def get_connection():
     db = pymysql.connect(
         host=os.getenv("DB_HOST"),
@@ -21,6 +24,7 @@ def get_connection():
 Returns a dictionary of stock data where the keys are dates and the value is a dict containing open, high, low, etc
 """
 def get_data_from_api(symbol):
+    print(symbol)
     api_key = os.getenv("API_KEY")
     base_url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&apikey=' + api_key + '&symbol='
 
@@ -28,6 +32,9 @@ def get_data_from_api(symbol):
 
     response = urllib.request.urlopen(url)
     data = json.loads(response.read())
+
+    if not "Time Series (Daily)" in data:
+        return None
 
     daily_data = data["Time Series (Daily)"]
     return daily_data
@@ -65,11 +72,6 @@ def get_symbols(db, cursor):
     db.commit()
     return symbols
 
-def dd(foo):
-    print(foo)
-    import sys
-    sys.exit()
-
 def main():
     db = get_connection()
     cursor = db.cursor()
@@ -77,12 +79,14 @@ def main():
     for symbol in symbol_list:
         daily_data = get_data_from_api(symbol)
 
-        for date in daily_data:
-            open = daily_data[date]['1. open']
-            close = daily_data[date]['4. close']
-            volume = daily_data[date]['5. volume']
+        if (daily_data):
 
-            save_data(cursor, symbol, date, open, close, volume)
+            for date in daily_data:
+                open = daily_data[date]['1. open']
+                close = daily_data[date]['4. close']
+                volume = daily_data[date]['5. volume']
+
+                save_data(cursor, symbol, date, open, close, volume)
 
         db.commit()
 
